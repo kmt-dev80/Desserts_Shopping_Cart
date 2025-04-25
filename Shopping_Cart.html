@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Cart</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Delicious Desserts</h1>
+        
+        <div class="grid-container">
+            <div class="card" data-product="Creme Brulee" data-price="500">
+                <a href="#"><img src="images/image-creme-brulee-desktop.jpg" alt="Creme Brulee"></a>
+                <div class="card-details">
+                    <p class="text-body">Classic French Dessert</p>
+                    <p class="text-title">Creme Brulee</p>
+                    <p class="price">৳500</p>
+                </div>
+                <button class="card-button"><i class="bi bi-cart-plus"></i> Add to Cart</button>
+            </div>
+            <div class="card" data-product="Waffle" data-price="600">
+                <a href="#"><img src="images/image-waffle-desktop.jpg" alt="Waffle"></a>
+                <div class="card-details">
+                    <p class="text-body">Belgian Style</p>
+                    <p class="text-title">Waffle</p>
+                    <p class="price">৳600</p>
+                </div>
+                <button class="card-button"><i class="bi bi-cart-plus"></i> Add to Cart</button>
+            </div>
+            <div class="card" data-product="Turkish Dessert" data-price="400">
+                <a href="#"><img src="images/Turkish Dessert.jpg" alt="Turkish Dessert"></a>
+                <div class="card-details">
+                    <p class="text-body">Exotic Sweet</p>
+                    <p class="text-title">Turkish Dessert</p>
+                    <p class="price">৳400</p>
+                </div>
+                <button class="card-button"><i class="bi bi-cart-plus"></i> Add to Cart</button>
+            </div>
+            <div class="card" data-product="Baklava" data-price="300">
+                <a href="#"><img src="images/image-baklava-desktop.jpg" alt="Baklava"></a>
+                <div class="card-details">
+                    <p class="text-body">Layered Pastry</p>
+                    <p class="text-title">Baklava</p>
+                    <p class="price">৳300</p>
+                </div>
+                <button class="card-button"><i class="bi bi-cart-plus"></i> Add to Cart</button>
+            </div>
+        </div>
+
+        <div class="empty-cart" id="empty-cart">
+            <i class="bi bi-cart-x"></i>
+            <p>Your cart is empty</p>
+            <p class="text-muted">Add some delicious desserts to get started!</p>
+        </div>
+
+        <table id="cart-table" class="table">
+            <thead>
+                <tr>
+                    <th>Image</th>
+                    <th>Product</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                    <th>Subtotal</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="cart-body"></tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="4"></td>
+                    <td class="text-end"><strong>Total:</strong></td>
+                    <td id="total-price"><strong>৳0</strong></td>
+                </tr>
+            </tfoot>
+        </table>
+        
+        <button class="checkout-btn" id="checkout-btn">
+            <i class="bi bi-credit-card"></i> Checkout
+        </button>
+        
+        <div class="notification" id="notification">
+            <i class="bi bi-check-circle"></i>
+            <span>Item added to cart!</span>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            let totalPrice = 0;
+            const cartBody = document.getElementById('cart-body');
+            const emptyCartMsg = document.getElementById('empty-cart');
+            const checkoutBtn = document.getElementById('checkout-btn');
+            const notification = document.getElementById('notification');
+            
+            // Helper function to format numbers with commas
+            const formatNumber = (num) => {
+                return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            };
+            
+            // Show notification
+            const showNotification = () => {
+                notification.classList.add('show');
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+            };
+            
+            // Update cart visibility
+            const updateCartVisibility = () => {
+                if (cartBody.children.length === 0) {
+                    document.getElementById('cart-table').style.display = 'none';
+                    checkoutBtn.style.display = 'none';
+                    emptyCartMsg.style.display = 'block';
+                } else {
+                    document.getElementById('cart-table').style.display = 'table';
+                    checkoutBtn.style.display = 'block';
+                    emptyCartMsg.style.display = 'none';
+                }
+            };
+            
+            // Update total price
+            const updateTotalPrice = () => {
+                totalPrice = [...document.querySelectorAll('.sub-total')]
+                    .reduce((sum, el) => sum + parseFloat(el.textContent.replace(/[^\d.]/g, '')), 0);
+                document.getElementById('total-price').innerHTML = `<strong>৳${formatNumber(totalPrice)}</strong>`;
+            };
+            
+            // Add to cart function
+            const addToCart = (productName, productPrice, productImg) => {
+                // Check if product already exists in cart
+                let existingRow = [...cartBody.children].find(row => 
+                    row.querySelector('td:nth-child(2)').textContent === productName);
+                
+                if (existingRow) {
+                    // Increment quantity if product exists
+                    let qtyEl = existingRow.querySelector('.quantity');
+                    qtyEl.textContent = +qtyEl.textContent + 1;
+                    
+                    // Update subtotal
+                    let price = parseFloat(existingRow.querySelector('td:nth-child(3)').textContent.replace(/[^\d.]/g, ''));
+                    existingRow.querySelector('.sub-total').textContent = `৳${formatNumber((+qtyEl.textContent) * price)}`;
+                    
+                    // Add highlight effect to existing row
+                    existingRow.classList.add('highlight');
+                    setTimeout(() => {
+                        existingRow.classList.remove('highlight');
+                    }, 500);
+                } else {
+                    // Add new row
+                    const newRow = document.createElement('tr');
+                    newRow.classList.add('cart-item-enter');
+                    newRow.innerHTML = `
+                        <td data-label="Image"><img src="${productImg}" alt="${productName}"></td>
+                        <td data-label="Product">${productName}</td>
+                        <td data-label="Price">৳${formatNumber(productPrice)}</td>
+                        <td data-label="Quantity">
+                            <div class="quantity-control">
+                                <button class="btn btn-sm decrement">-</button>
+                                <span class="quantity">1</span>
+                                <button class="btn btn-sm increment">+</button>
+                            </div>
+                        </td>
+                        <td data-label="Subtotal" class="sub-total">৳${formatNumber(productPrice)}</td>
+                        <td data-label="Action"><button class="btn btn-sm btn-danger delete-btn"><i class="bi bi-trash"></i></button></td>
+                    `;
+                    cartBody.appendChild(newRow);
+                    
+                    // Trigger animation
+                    setTimeout(() => {
+                        newRow.classList.add('cart-item-enter-active');
+                    }, 10);
+                }
+                
+                // Show notification
+                showNotification();
+                
+                // Update total and visibility
+                updateTotalPrice();
+                updateCartVisibility();
+            };
+            
+            // Event listeners for add to cart buttons
+            document.querySelectorAll('.card-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    const card = this.closest('.card');
+                    const productName = card.querySelector('.text-title').textContent;
+                    const productPrice = parseFloat(card.getAttribute('data-price'));
+                    const productImg = card.querySelector('img').src;
+                    
+                    addToCart(productName, productPrice, productImg);
+                });
+            });
+            
+            // Event delegation for quantity controls and delete buttons
+            document.addEventListener('click', function(e) {
+                // Increment quantity
+                if (e.target.classList.contains('increment')) {
+                    const row = e.target.closest('tr');
+                    const qtyEl = row.querySelector('.quantity');
+                    const newQty = +qtyEl.textContent + 1;
+                    qtyEl.textContent = newQty;
+                    
+                    const price = parseFloat(row.querySelector('td:nth-child(3)').textContent.replace(/[^\d.]/g, ''));
+                    row.querySelector('.sub-total').textContent = `৳${formatNumber(newQty * price)}`;
+                    
+                    updateTotalPrice();
+                }
+                
+                // Decrement quantity
+                if (e.target.classList.contains('decrement')) {
+                    const row = e.target.closest('tr');
+                    const qtyEl = row.querySelector('.quantity');
+                    const newQty = Math.max(1, +qtyEl.textContent - 1);
+                    qtyEl.textContent = newQty;
+                    
+                    const price = parseFloat(row.querySelector('td:nth-child(3)').textContent.replace(/[^\d.]/g, ''));
+                    row.querySelector('.sub-total').textContent = `৳${formatNumber(newQty * price)}`;
+                    
+                    updateTotalPrice();
+                }
+                
+                // Delete item
+                if (e.target.classList.contains('delete-btn') || e.target.closest('.delete-btn')) {
+                    const btn = e.target.classList.contains('delete-btn') ? e.target : e.target.closest('.delete-btn');
+                    const row = btn.closest('tr');
+                    row.classList.add('cart-item-exit-active');
+                    
+                    setTimeout(() => {
+                        row.remove();
+                        updateTotalPrice();
+                        updateCartVisibility();
+                    }, 500);
+                }
+            });
+            
+            // Checkout button
+            checkoutBtn.addEventListener('click', function() {
+                if (cartBody.children.length > 0) {
+                    alert(`Thank you for your order!\nTotal: ৳${formatNumber(totalPrice)}`);
+                    
+                    // Clear cart
+                    cartBody.innerHTML = '';
+                    updateTotalPrice();
+                    updateCartVisibility();
+                }
+            });
+            
+            // Initialize cart visibility
+            updateCartVisibility();
+        });
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
